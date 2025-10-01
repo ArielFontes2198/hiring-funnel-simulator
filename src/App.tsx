@@ -124,60 +124,71 @@ function App() {
     }))
 
     if (simulationMode === 'top-down') {
-      let current = startingCandidates
-      return stages.map((stage, index) => {
+      // Top-down: Start with initial candidates and calculate forward
+      const results: StageResult[] = []
+      let currentCandidates = startingCandidates
+      
+      for (let i = 0; i < stages.length; i++) {
+        const stage = stages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
-          return {
+          results.push({
             ...stage,
-            candidates: index === 0 ? startingCandidates : stages[index - 1].result,
+            candidates: currentCandidates,
             result: overrideValue,
             isOverride: true
-          }
+          })
+          currentCandidates = overrideValue // Next stage starts with this result
         } else {
-          const result = Math.round(current * stage.ptr)
-          current = result
-          return {
+          const result = Math.round(currentCandidates * stage.ptr)
+          results.push({
             ...stage,
-            candidates: index === 0 ? startingCandidates : stages[index - 1].result,
-            result,
+            candidates: currentCandidates,
+            result: result,
             isOverride: false
-          }
+          })
+          currentCandidates = result // Next stage starts with this result
         }
-      })
-    } else {
-      // Bottom-up calculation
-      const reversedStages = [...stages].reverse()
-      let current = targetHires
+      }
       
-      const results = reversedStages.map((stage, index) => {
+      return results
+    } else {
+      // Bottom-up: Start with target hires and calculate backwards
+      const results: StageResult[] = []
+      let currentTarget = targetHires
+      
+      // Process stages in reverse order (from last to first)
+      for (let i = stages.length - 1; i >= 0; i--) {
+        const stage = stages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
-          return {
+          results.unshift({
             ...stage,
             candidates: overrideValue,
-            result: current,
+            result: currentTarget,
             isOverride: true
-          }
+          })
+          currentTarget = overrideValue // Previous stage needs this many candidates
         } else {
-          const needed = Math.round(current / stage.ptr)
-          current = needed
-          return {
+          // Calculate how many candidates we need for this stage
+          const neededCandidates = Math.round(currentTarget / stage.ptr)
+          results.unshift({
             ...stage,
-            candidates: needed,
-            result: index === 0 ? targetHires : results[index - 1]?.candidates || 0,
+            candidates: neededCandidates,
+            result: currentTarget,
             isOverride: false
-          }
+          })
+          currentTarget = neededCandidates // Previous stage needs this many candidates
         }
-      })
+      }
       
-      return results.reverse()
+      return results
     }
   }
 
@@ -213,6 +224,13 @@ function App() {
 
   // Clear all overrides
   const clearOverrides = () => {
+    setStageOverrides({})
+  }
+
+  // Handle simulation mode change
+  const handleSimulationModeChange = (mode: 'top-down' | 'bottom-up') => {
+    setSimulationMode(mode)
+    // Clear overrides when changing mode to avoid conflicts
     setStageOverrides({})
   }
 
@@ -330,7 +348,7 @@ function App() {
                 <label>Simulation Mode:</label>
                 <select 
                   value={simulationMode} 
-                  onChange={(e) => setSimulationMode(e.target.value as 'top-down' | 'bottom-up')}
+                  onChange={(e) => handleSimulationModeChange(e.target.value as 'top-down' | 'bottom-up')}
                   className="control-select"
                 >
                   <option value="top-down">Top-Down (Forward)</option>
