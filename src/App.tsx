@@ -49,8 +49,8 @@ function App() {
     setError(null)
     
     try {
-      // For now, using mock data. Replace with actual Apps Script URL
-      const response = await fetch('https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec')
+      // Fetch data from Google Apps Script
+      const response = await fetch('https://script.google.com/macros/s/AKfycbzpyGjBfMQkHUgaEYXQSz2YsooCsHigrzMpA3NtxYjd8Gb9vlucXLX40dMzph15fcSl9Q/exec?sheetId=1Le7Ie7z3Na_VWa_cNwtwpbHwilBxSip2wddOORpFv6s&tab=Inputs')
       
       if (!response.ok) {
         throw new Error('Failed to fetch data')
@@ -346,7 +346,7 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="logo-section">
-            <div className="logo-placeholder">🏦</div>
+            <img src="/brand/nubank-logo.svg" alt="Nubank" className="logo" />
             <h1 className="title">Hiring Funnel Simulator</h1>
           </div>
           
@@ -526,7 +526,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {results.map((stage, index) => {
+                    {results.map((stage) => {
                       const stageKey = `${stage.order}-${stage.stage}`
                       const overrideValue = stageOverrides[stageKey]
                       
