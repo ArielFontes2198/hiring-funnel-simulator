@@ -114,29 +114,37 @@ function App() {
   const calculateResults = (): StageResult[] => {
     if (filteredData.length === 0) return []
 
-    const stages = filteredData.map(item => ({
-      stage: item.Stage,
-      order: item.Order,
-      ptr: item.PTR,
-      candidates: 0,
-      result: 0,
-      isOverride: false
-    }))
+    // Get unique stages (remove duplicates by order)
+    const uniqueStages = filteredData.reduce((acc, item) => {
+      if (!acc.find(s => s.order === item.Order)) {
+        acc.push({
+          stage: item.Stage,
+          order: item.Order,
+          ptr: item.PTR
+        })
+      }
+      return acc
+    }, [] as { stage: string; order: number; ptr: number }[])
+
+    // Sort by order
+    uniqueStages.sort((a, b) => a.order - b.order)
 
     if (simulationMode === 'top-down') {
       // Top-down: Start with initial candidates and calculate forward
       const results: StageResult[] = []
       let currentCandidates = startingCandidates
       
-      for (let i = 0; i < stages.length; i++) {
-        const stage = stages[i]
+      for (let i = 0; i < uniqueStages.length; i++) {
+        const stage = uniqueStages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
           results.push({
-            ...stage,
+            stage: stage.stage,
+            order: stage.order,
+            ptr: stage.ptr,
             candidates: currentCandidates,
             result: overrideValue,
             isOverride: true
@@ -145,7 +153,9 @@ function App() {
         } else {
           const result = Math.round(currentCandidates * stage.ptr)
           results.push({
-            ...stage,
+            stage: stage.stage,
+            order: stage.order,
+            ptr: stage.ptr,
             candidates: currentCandidates,
             result: result,
             isOverride: false
@@ -161,15 +171,17 @@ function App() {
       let currentTarget = targetHires
       
       // Process stages in reverse order (from last to first)
-      for (let i = stages.length - 1; i >= 0; i--) {
-        const stage = stages[i]
+      for (let i = uniqueStages.length - 1; i >= 0; i--) {
+        const stage = uniqueStages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
           results.unshift({
-            ...stage,
+            stage: stage.stage,
+            order: stage.order,
+            ptr: stage.ptr,
             candidates: overrideValue,
             result: currentTarget,
             isOverride: true
@@ -179,7 +191,9 @@ function App() {
           // Calculate how many candidates we need for this stage
           const neededCandidates = Math.round(currentTarget / stage.ptr)
           results.unshift({
-            ...stage,
+            stage: stage.stage,
+            order: stage.order,
+            ptr: stage.ptr,
             candidates: neededCandidates,
             result: currentTarget,
             isOverride: false
@@ -417,7 +431,13 @@ function App() {
                             value={overrideValue || ''}
                             onChange={(e) => handleStageOverride(stageKey, e.target.value)}
                             className="override-input"
+                            title={overrideValue ? `Override: ${overrideValue}` : 'Click to override this stage'}
                           />
+                          {overrideValue && (
+                            <div style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 'bold', marginTop: '2px' }}>
+                              OVERRIDE
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )

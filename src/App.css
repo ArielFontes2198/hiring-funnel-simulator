@@ -344,29 +344,34 @@ body {
 }
 
 .override-row {
-  background: #FEF3C7;
+  background: #E0F2FE !important;
+  border-left: 4px solid var(--primary) !important;
 }
 
 .override-input {
   padding: 8px 12px;
-  border: 1px solid var(--gray-300);
+  border: 2px solid var(--primary);
   border-radius: 6px;
   background: var(--white);
   color: var(--text);
   font-size: 14px;
+  font-weight: 500;
   width: 120px;
   text-align: center;
+  box-shadow: 0 0 0 1px rgba(138, 5, 190, 0.1);
 }
 
 .override-input:focus {
   outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(138, 5, 190, 0.1);
+  border-color: var(--dark);
+  box-shadow: 0 0 0 3px rgba(138, 5, 190, 0.2);
+  background: #FEF7FF;
 }
 
 .override-input::placeholder {
-  color: var(--gray-600);
+  color: var(--gray-500);
   font-size: 12px;
+  font-weight: 400;
 }
 
 /* Inputs Page */
