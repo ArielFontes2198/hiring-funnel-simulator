@@ -50,7 +50,7 @@ function App() {
     
     try {
       // Fetch data from Google Apps Script
-      const response = await fetch('https://script.google.com/macros/s/AKfycbzpyGjBfMQkHUgaEYXQSz2YsooCsHigrzMpA3NtxYjd8Gb9vlucXLX40dMzph15fcSl9Q/exec?sheetId=1Le7Ie7z3Na_VWa_cNwtwpbHwilBxSip2wddOORpFv6s&tab=Inputs')
+      const response = await fetch('https://script.google.com/macros/s/AKfycbxRATtaFdUCJAUZtdymZ-rCy27nUFLTUx1zvpWbvLCDHGCoAqbtCAOTy5u69ycykmRo5A/exec')
       
       if (!response.ok) {
         throw new Error('Failed to fetch data')
