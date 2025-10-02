@@ -208,6 +208,7 @@ function App() {
       
       // Initialize all results with baseline calculation
       let currentTarget = targetHires
+      let currentSumTarget = targetHires
       for (let i = uniqueStages.length - 1; i >= 0; i--) {
         const stage = uniqueStages[i]
         const neededCandidates = currentTarget / stage.ptr
@@ -220,9 +221,10 @@ function App() {
           candidates: parseFloat(neededCandidates.toFixed(2)),
           result: currentTarget,
           isOverride: false,
-          sum: currentTarget + sumValue
+          sum: currentSumTarget + sumValue
         })
         currentTarget = neededCandidates
+        currentSumTarget = currentSumTarget + sumValue
       }
       
       // Find the earliest override and recalculate from there forward
@@ -247,7 +249,7 @@ function App() {
         const sumValue = stageSums[overrideKey] || 0
         results[earliestOverrideIndex] = {
           ...results[earliestOverrideIndex],
-          candidates: earliestOverrideValue,
+          candidates: parseFloat(earliestOverrideValue.toFixed(2)),
           result: earliestOverrideValue,
           isOverride: true,
           sum: earliestOverrideValue + sumValue
@@ -255,6 +257,7 @@ function App() {
         
         // Calculate forward from the override point
         let currentCandidates = earliestOverrideValue
+        let currentSumCandidates = earliestOverrideValue + sumValue
         
         for (let i = earliestOverrideIndex + 1; i < uniqueStages.length; i++) {
           const stage = uniqueStages[i]
@@ -264,26 +267,28 @@ function App() {
           
           if (hasOverride) {
             const overrideValue = stageOverrides[overrideKey]!
-            const sumResult = currentCandidates * stage.ptr + sumValue
+            const sumResult = currentSumCandidates * stage.ptr + sumValue
             results[i] = {
               ...results[i],
-              candidates: currentCandidates,
+              candidates: parseFloat(currentCandidates.toFixed(2)),
               result: overrideValue,
               isOverride: true,
               sum: sumResult
             }
             currentCandidates = overrideValue
+            currentSumCandidates = sumResult
           } else {
             const result = currentCandidates * stage.ptr
-            const sumResult = currentCandidates * stage.ptr + sumValue
+            const sumResult = currentSumCandidates * stage.ptr + sumValue
             results[i] = {
               ...results[i],
-              candidates: currentCandidates,
+              candidates: parseFloat(currentCandidates.toFixed(2)),
               result: result,
               isOverride: false,
               sum: sumResult
             }
             currentCandidates = result
+            currentSumCandidates = sumResult
           }
         }
       }
