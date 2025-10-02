@@ -398,10 +398,10 @@ function App() {
               <h2>Hiring Funnel Simulator</h2>
               <div className="pipeline-info">
                 <span><strong>Period:</strong> {pipelineInfo.period}</span>
-                <span><strong>Function:</strong> {pipelineInfo.function}</span>
-                <span><strong>Level:</strong> {pipelineInfo.level}</span>
-                <span><strong>Country:</strong> {pipelineInfo.country}</span>
-                <span><strong>Source:</strong> {pipelineInfo.source}</span>
+                <span><strong>Function:</strong> {filters.function || 'Select Function'}</span>
+                <span><strong>Level:</strong> {filters.level || 'Select Level'}</span>
+                <span><strong>Country:</strong> {filters.country || 'Select Country'}</span>
+                <span><strong>Source:</strong> {filters.source || 'Select Source'}</span>
               </div>
             </div>
 
