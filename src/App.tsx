@@ -346,7 +346,7 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="logo-section">
-            <img src="/brand/nubank-logo.svg" alt="Nubank" className="logo" />
+            <img src="/brand/01_nulogo_the-purple.png" alt="Nubank" className="logo" />
             <h1 className="title">Hiring Funnel Simulator</h1>
           </div>
           
