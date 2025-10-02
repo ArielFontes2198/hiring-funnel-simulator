@@ -174,151 +174,127 @@ function App() {
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
-          const sumResult = overrideValue + sumValue
           results.push({
             stage: stage.stage,
             order: stage.order,
             ptr: stage.ptr,
-            candidates: parseFloat(currentCandidates.toFixed(2)),
+            candidates: currentCandidates,
             result: overrideValue,
             isOverride: true,
-            sum: sumResult
+            sum: currentSumCandidates * stage.ptr + sumValue
           })
           currentCandidates = overrideValue // Next stage starts with this result
-          currentSumCandidates = sumResult
+          currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
         } else {
           const result = currentCandidates * stage.ptr
-          const sumResult = currentSumCandidates * stage.ptr + sumValue
           results.push({
             stage: stage.stage,
             order: stage.order,
             ptr: stage.ptr,
-            candidates: parseFloat(currentCandidates.toFixed(2)),
+            candidates: currentCandidates,
             result: result,
             isOverride: false,
-            sum: sumResult
+            sum: currentSumCandidates * stage.ptr + sumValue
           })
           currentCandidates = result // Next stage starts with this result
-          currentSumCandidates = sumResult
+          currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
         }
       }
       
       return results
-      } else {
-        // Bottom-up: Start with target hires and calculate forwards
-        const results: StageResult[] = []
-        
-        // Find the earliest override
-        let earliestOverrideIndex = -1
-        for (let i = 0; i < uniqueStages.length; i++) {
-          const overrideKey = `${uniqueStages[i].order}-${uniqueStages[i].stage}`
-          if (stageOverrides[overrideKey] !== undefined) {
-            earliestOverrideIndex = i
-            break
-          }
-        }
-        
-        if (earliestOverrideIndex >= 0) {
-          // Has override - calculate from override point
-          let currentCandidates = stageOverrides[`${uniqueStages[earliestOverrideIndex].order}-${uniqueStages[earliestOverrideIndex].stage}`]!
-          let currentSumCandidates = currentCandidates + (stageSums[`${uniqueStages[earliestOverrideIndex].order}-${uniqueStages[earliestOverrideIndex].stage}`] || 0)
-          
-          // Calculate backwards from override to get candidates for earlier stages
-          for (let i = earliestOverrideIndex - 1; i >= 0; i--) {
-            const stage = uniqueStages[i]
-            const overrideKey = `${stage.order}-${stage.stage}`
-            const sumValue = stageSums[overrideKey] || 0
-            const neededCandidates = currentCandidates / stage.ptr
-            
-            results.unshift({
-              stage: stage.stage,
-              order: stage.order,
-              ptr: stage.ptr,
-              candidates: parseFloat(neededCandidates.toFixed(2)),
-              result: currentCandidates,
-              isOverride: false,
-              sum: currentCandidates + sumValue
-            })
-            
-            currentCandidates = neededCandidates
-          }
-          
-          // Add the override stage
-          const overrideKey = `${uniqueStages[earliestOverrideIndex].order}-${uniqueStages[earliestOverrideIndex].stage}`
-          results.push({
-            stage: uniqueStages[earliestOverrideIndex].stage,
-            order: uniqueStages[earliestOverrideIndex].order,
-            ptr: uniqueStages[earliestOverrideIndex].ptr,
-            candidates: parseFloat(currentCandidates.toFixed(2)),
-            result: stageOverrides[overrideKey]!,
-            isOverride: true,
-            sum: currentSumCandidates
-          })
-          
-          currentCandidates = stageOverrides[overrideKey]!
-          
-          // Calculate forward from override
-          for (let i = earliestOverrideIndex + 1; i < uniqueStages.length; i++) {
-            const stage = uniqueStages[i]
-            const overrideKey = `${stage.order}-${stage.stage}`
-            const hasOverride = stageOverrides[overrideKey] !== undefined
-            const sumValue = stageSums[overrideKey] || 0
-            
-            if (hasOverride) {
-              const overrideValue = stageOverrides[overrideKey]!
-              const sumResult = currentSumCandidates * stage.ptr + sumValue
-              results.push({
-                stage: stage.stage,
-                order: stage.order,
-                ptr: stage.ptr,
-                candidates: parseFloat(currentCandidates.toFixed(2)),
-                result: overrideValue,
-                isOverride: true,
-                sum: sumResult
-              })
-              currentCandidates = overrideValue
-              currentSumCandidates = sumResult
-            } else {
-              const result = currentCandidates * stage.ptr
-              const sumResult = currentSumCandidates * stage.ptr + sumValue
-              results.push({
-                stage: stage.stage,
-                order: stage.order,
-                ptr: stage.ptr,
-                candidates: parseFloat(currentCandidates.toFixed(2)),
-                result: result,
-                isOverride: false,
-                sum: sumResult
-              })
-              currentCandidates = result
-              currentSumCandidates = sumResult
-            }
-          }
-        } else {
-          // No override - calculate backwards from target
-          let currentTarget = targetHires
-          for (let i = uniqueStages.length - 1; i >= 0; i--) {
-            const stage = uniqueStages[i]
-            const overrideKey = `${stage.order}-${stage.stage}`
-            const sumValue = stageSums[overrideKey] || 0
-            const neededCandidates = currentTarget / stage.ptr
-            
-            results.unshift({
-              stage: stage.stage,
-              order: stage.order,
-              ptr: stage.ptr,
-              candidates: parseFloat(neededCandidates.toFixed(2)),
-              result: currentTarget,
-              isOverride: false,
-              sum: currentTarget + sumValue
-            })
-            
-            currentTarget = neededCandidates
-          }
-        }
-        
-        return results
+    } else {
+      // Bottom-up: Start with target hires and calculate forwards
+      const results: StageResult[] = []
+      
+      // Initialize all results with baseline calculation
+      let currentTarget = targetHires
+      let currentSumTarget = targetHires
+      for (let i = uniqueStages.length - 1; i >= 0; i--) {
+        const stage = uniqueStages[i]
+        const neededCandidates = currentTarget / stage.ptr
+        const overrideKey = `${stage.order}-${stage.stage}`
+        const sumValue = stageSums[overrideKey] || 0
+        results.unshift({
+          stage: stage.stage,
+          order: stage.order,
+          ptr: stage.ptr,
+          candidates: parseFloat(neededCandidates.toFixed(2)),
+          result: currentTarget,
+          isOverride: false,
+          sum: currentSumTarget + sumValue
+        })
+        currentTarget = neededCandidates
+        currentSumTarget = currentSumTarget + sumValue
       }
+      
+      // Find the earliest override and recalculate from there forward
+      let earliestOverrideIndex = -1
+      let earliestOverrideValue = 0
+      
+      for (let i = 0; i < uniqueStages.length; i++) {
+        const stage = uniqueStages[i]
+        const overrideKey = `${stage.order}-${stage.stage}`
+        const hasOverride = stageOverrides[overrideKey] !== undefined
+        
+        if (hasOverride && earliestOverrideIndex === -1) {
+          earliestOverrideIndex = i
+          earliestOverrideValue = stageOverrides[overrideKey]!
+        }
+      }
+      
+      // If we have an override, recalculate from that point forward
+      if (earliestOverrideIndex !== -1) {
+        // Apply the override
+        const overrideKey = `${uniqueStages[earliestOverrideIndex].order}-${uniqueStages[earliestOverrideIndex].stage}`
+        const sumValue = stageSums[overrideKey] || 0
+        results[earliestOverrideIndex] = {
+          ...results[earliestOverrideIndex],
+          candidates: parseFloat(earliestOverrideValue.toFixed(2)),
+          result: earliestOverrideValue,
+          isOverride: true,
+          sum: earliestOverrideValue + sumValue
+        }
+        
+        // Calculate forward from the override point
+        let currentCandidates = earliestOverrideValue
+        let currentSumCandidates = earliestOverrideValue + sumValue
+        
+        for (let i = earliestOverrideIndex + 1; i < uniqueStages.length; i++) {
+          const stage = uniqueStages[i]
+          const overrideKey = `${stage.order}-${stage.stage}`
+          const hasOverride = stageOverrides[overrideKey] !== undefined
+          const sumValue = stageSums[overrideKey] || 0
+          
+          if (hasOverride) {
+            const overrideValue = stageOverrides[overrideKey]!
+            const sumResult = currentSumCandidates * stage.ptr + sumValue
+            results[i] = {
+              ...results[i],
+              candidates: parseFloat(currentCandidates.toFixed(2)),
+              result: overrideValue,
+              isOverride: true,
+              sum: sumResult
+            }
+            currentCandidates = overrideValue
+            currentSumCandidates = sumResult
+          } else {
+            const result = currentCandidates * stage.ptr
+            const sumResult = currentSumCandidates * stage.ptr + sumValue
+            results[i] = {
+              ...results[i],
+              candidates: parseFloat(currentCandidates.toFixed(2)),
+              result: result,
+              isOverride: false,
+              sum: sumResult
+            }
+            currentCandidates = result
+            currentSumCandidates = sumResult
+          }
+        }
+      }
+      
+      return results
+    }
   }
 
   const results = calculateResults()
@@ -341,7 +317,7 @@ function App() {
 
   // Handle stage override
   const handleStageOverride = (stageKey: string, value: string) => {
-    const numValue = value === '' ? undefined : parseFloat(value)
+    const numValue = value === '' ? undefined : parseInt(value)
     if (numValue === undefined) {
       const newOverrides = { ...stageOverrides }
       delete newOverrides[stageKey]
@@ -553,9 +529,8 @@ function App() {
                   <label>Starting Candidates:</label>
                   <input
                     type="number"
-                    step="0.01"
                     value={startingCandidates}
-                    onChange={(e) => setStartingCandidates(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setStartingCandidates(parseInt(e.target.value) || 0)}
                     className="control-input"
                   />
                 </div>
@@ -564,9 +539,8 @@ function App() {
                   <label>Target Hires:</label>
                   <input
                     type="number"
-                    step="0.01"
                     value={targetHires}
-                    onChange={(e) => setTargetHires(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setTargetHires(parseInt(e.target.value) || 0)}
                     className="control-input"
                   />
                 </div>
@@ -638,7 +612,6 @@ function App() {
                           <td>
                             <input
                               type="number"
-                              step="0.01"
                               placeholder="Override"
                               value={overrideValue || ''}
                               onChange={(e) => handleStageOverride(stageKey, e.target.value)}
