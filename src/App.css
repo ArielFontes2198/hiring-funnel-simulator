@@ -347,6 +347,17 @@ body {
   background: #F0F9FF !important;
   border-left: 4px solid var(--primary) !important;
   position: relative;
+  color: var(--primary) !important;
+}
+
+.override-row td {
+  color: var(--primary) !important;
+  font-weight: 500;
+}
+
+.override-row .result-cell {
+  color: var(--dark) !important;
+  font-weight: 700;
 }
 
 .override-row::before {

@@ -166,10 +166,10 @@ function App() {
       
       return results
     } else {
-      // Bottom-up: Start with target hires and calculate backwards
+      // Bottom-up: Start with target hires and calculate forwards from the override point
       const results: StageResult[] = []
       
-      // First, calculate normally without overrides to get baseline
+      // Initialize all results with baseline calculation
       let currentTarget = targetHires
       for (let i = uniqueStages.length - 1; i >= 0; i--) {
         const stage = uniqueStages[i]
@@ -185,46 +185,56 @@ function App() {
         currentTarget = neededCandidates
       }
       
-      // Now apply overrides and recalculate affected stages
+      // Find the earliest override and recalculate from there forward
+      let earliestOverrideIndex = -1
+      let earliestOverrideValue = 0
+      
       for (let i = 0; i < uniqueStages.length; i++) {
         const stage = uniqueStages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
         
-        if (hasOverride) {
-          const overrideValue = stageOverrides[overrideKey]!
-          results[i] = {
-            ...results[i],
-            candidates: overrideValue,
-            isOverride: true
-          }
+        if (hasOverride && earliestOverrideIndex === -1) {
+          earliestOverrideIndex = i
+          earliestOverrideValue = stageOverrides[overrideKey]!
+        }
+      }
+      
+      // If we have an override, recalculate from that point forward
+      if (earliestOverrideIndex !== -1) {
+        // Apply the override
+        results[earliestOverrideIndex] = {
+          ...results[earliestOverrideIndex],
+          candidates: earliestOverrideValue,
+          isOverride: true
+        }
+        
+        // Calculate forward from the override point
+        let currentCandidates = earliestOverrideValue
+        
+        for (let i = earliestOverrideIndex + 1; i < uniqueStages.length; i++) {
+          const stage = uniqueStages[i]
+          const overrideKey = `${stage.order}-${stage.stage}`
+          const hasOverride = stageOverrides[overrideKey] !== undefined
           
-          // Recalculate all subsequent stages (higher order numbers)
-          let nextTarget = overrideValue
-          for (let j = i + 1; j < uniqueStages.length; j++) {
-            const nextStage = uniqueStages[j]
-            const nextOverrideKey = `${nextStage.order}-${nextStage.stage}`
-            const nextHasOverride = stageOverrides[nextOverrideKey] !== undefined
-            
-            if (nextHasOverride) {
-              const nextOverrideValue = stageOverrides[nextOverrideKey]!
-              results[j] = {
-                ...results[j],
-                candidates: nextOverrideValue,
-                result: nextTarget,
-                isOverride: true
-              }
-              nextTarget = nextOverrideValue
-            } else {
-              const neededCandidates = Math.round(nextTarget / nextStage.ptr)
-              results[j] = {
-                ...results[j],
-                candidates: neededCandidates,
-                result: nextTarget,
-                isOverride: false
-              }
-              nextTarget = neededCandidates
+          if (hasOverride) {
+            const overrideValue = stageOverrides[overrideKey]!
+            results[i] = {
+              ...results[i],
+              candidates: currentCandidates,
+              result: overrideValue,
+              isOverride: true
             }
+            currentCandidates = overrideValue
+          } else {
+            const result = Math.round(currentCandidates * stage.ptr)
+            results[i] = {
+              ...results[i],
+              candidates: currentCandidates,
+              result: result,
+              isOverride: false
+            }
+            currentCandidates = result
           }
         }
       }
