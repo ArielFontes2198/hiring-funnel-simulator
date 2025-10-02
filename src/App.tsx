@@ -31,10 +31,10 @@ function App() {
 
   // Filter states
   const [filters, setFilters] = useState({
-    function: 'All',
-    level: 'All',
-    country: 'All',
-    source: 'All'
+    function: '',
+    level: '',
+    country: '',
+    source: ''
   })
 
   // Simulation states
@@ -99,15 +99,15 @@ function App() {
   // Get unique values for filters
   const getUniqueValues = (field: keyof FunnelData) => {
     const values = Array.from(new Set(data.map(item => item[field])))
-    return ['All', ...values.sort()]
+    return values.sort()
   }
 
   // Filter data based on current filters
   const filteredData = data.filter(item =>
-    (filters.function === 'All' || item.Function === filters.function) &&
-    (filters.level === 'All' || item.Level === filters.level) &&
-    (filters.country === 'All' || item.Country === filters.country) &&
-    (filters.source === 'All' || item.Source === filters.source)
+    (filters.function === '' || item.Function === filters.function) &&
+    (filters.level === '' || item.Level === filters.level) &&
+    (filters.country === '' || item.Country === filters.country) &&
+    (filters.source === '' || item.Source === filters.source)
   ).sort((a, b) => a.Order - b.Order)
 
   // Calculate simulation results
@@ -281,10 +281,10 @@ function App() {
   // Clear all filters
   const clearFilters = () => {
     setFilters({
-      function: 'All',
-      level: 'All',
-      country: 'All',
-      source: 'All'
+      function: '',
+      level: '',
+      country: '',
+      source: ''
     })
   }
 
@@ -368,6 +368,7 @@ function App() {
                   onChange={(e) => setFilters({...filters, function: e.target.value})}
                   className="filter-select"
                 >
+                  <option value="">Select Function</option>
                   {getUniqueValues('Function').map(func => (
                     <option key={func} value={func}>{func}</option>
                   ))}
@@ -378,6 +379,7 @@ function App() {
                   onChange={(e) => setFilters({...filters, level: e.target.value})}
                   className="filter-select"
                 >
+                  <option value="">Select Level</option>
                   {getUniqueValues('Level').map(level => (
                     <option key={level} value={level}>{level}</option>
                   ))}
@@ -388,6 +390,7 @@ function App() {
                   onChange={(e) => setFilters({...filters, country: e.target.value})}
                   className="filter-select"
                 >
+                  <option value="">Select Country</option>
                   {getUniqueValues('Country').map(country => (
                     <option key={country} value={country}>{country}</option>
                   ))}
@@ -398,6 +401,7 @@ function App() {
                   onChange={(e) => setFilters({...filters, source: e.target.value})}
                   className="filter-select"
                 >
+                  <option value="">Select Source</option>
                   {getUniqueValues('Source').map(source => (
                     <option key={source} value={source}>{source}</option>
                   ))}
