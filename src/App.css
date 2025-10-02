@@ -369,6 +369,42 @@ body {
   font-size: 16px;
 }
 
+/* No Data States */
+.no-data, .no-results {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 48px 24px;
+  text-align: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.no-data-icon, .no-results-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+
+.no-data h3, .no-results h3 {
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.no-data p, .no-results p {
+  color: var(--gray-600);
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.no-data p:last-child, .no-results p:last-child {
+  margin-bottom: 0;
+  font-size: 14px;
+  color: var(--gray-500);
+}
+
 .override-row {
   background: #F0F9FF !important;
   border-left: 4px solid var(--primary) !important;

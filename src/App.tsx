@@ -457,60 +457,76 @@ function App() {
             </div>
 
             {/* Results Table */}
-            <div className="results-table">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Order</th>
-                    <th>Stage</th>
-                    <th>PTR (%)</th>
-                    <th>Candidates</th>
-                    <th>Result</th>
-                    <th>Override</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((stage, index) => {
-                    const stageKey = `${stage.order}-${stage.stage}`
-                    const overrideValue = stageOverrides[stageKey]
-                    
-                    return (
-                      <tr key={stageKey} className={stage.isOverride ? 'override-row' : ''}>
-                        <td>{stage.order}</td>
-                        <td>{stage.stage}</td>
-                        <td>{(stage.ptr * 100).toFixed(0)}%</td>
-                        <td>{stage.candidates}</td>
-                        <td className="result-cell">{stage.result}</td>
-                        <td>
-                          <input
-                            type="number"
-                            placeholder="Override"
-                            value={overrideValue || ''}
-                            onChange={(e) => handleStageOverride(stageKey, e.target.value)}
-                            className="override-input"
-                            title={overrideValue ? `Override: ${overrideValue}` : 'Click to override this stage'}
-                          />
-                          {overrideValue && (
-                            <div style={{ 
-                              fontSize: '10px', 
-                              color: 'var(--primary)', 
-                              fontWeight: 'bold', 
-                              marginTop: '2px',
-                              backgroundColor: 'rgba(138, 5, 190, 0.1)',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              display: 'inline-block'
-                            }}>
-                              OVERRIDE
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+            {filteredData.length === 0 ? (
+              <div className="no-data">
+                <div className="no-data-icon">📊</div>
+                <h3>No Data Available</h3>
+                <p>No funnel data found for the selected filter combination.</p>
+                <p>Try adjusting your filters or click "Clear Filters" to see all available data.</p>
+              </div>
+            ) : results.length > 0 ? (
+              <div className="results-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Stage</th>
+                      <th>PTR (%)</th>
+                      <th>Candidates</th>
+                      <th>Result</th>
+                      <th>Override</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((stage, index) => {
+                      const stageKey = `${stage.order}-${stage.stage}`
+                      const overrideValue = stageOverrides[stageKey]
+                      
+                      return (
+                        <tr key={stageKey} className={stage.isOverride ? 'override-row' : ''}>
+                          <td>{stage.order}</td>
+                          <td>{stage.stage}</td>
+                          <td>{(stage.ptr * 100).toFixed(0)}%</td>
+                          <td>{stage.candidates}</td>
+                          <td className="result-cell">{stage.result}</td>
+                          <td>
+                            <input
+                              type="number"
+                              placeholder="Override"
+                              value={overrideValue || ''}
+                              onChange={(e) => handleStageOverride(stageKey, e.target.value)}
+                              className="override-input"
+                              title={overrideValue ? `Override: ${overrideValue}` : 'Click to override this stage'}
+                            />
+                            {overrideValue && (
+                              <div style={{ 
+                                fontSize: '10px', 
+                                color: 'var(--primary)', 
+                                fontWeight: 'bold', 
+                                marginTop: '2px',
+                                backgroundColor: 'rgba(138, 5, 190, 0.1)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                display: 'inline-block'
+                              }}>
+                                OVERRIDE
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="no-results">
+                <div className="no-results-icon">⚠️</div>
+                <h3>No Results</h3>
+                <p>Unable to calculate simulation results for the current data.</p>
+                <p>Please check your simulation parameters or try different filters.</p>
+              </div>
+            )}
 
             {lastUpdated && (
               <div className="last-updated">
