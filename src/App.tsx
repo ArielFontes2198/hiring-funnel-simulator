@@ -457,7 +457,7 @@ function App() {
             </div>
 
             {/* Results Table */}
-            {filteredData.length === 0 ? (
+            {filteredData.length === 0 && data.length > 0 ? (
               <div className="no-data">
                 <div className="no-data-icon">📊</div>
                 <h3>No Data Available</h3>
