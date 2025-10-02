@@ -128,13 +128,16 @@ function App() {
     return values.sort()
   }
 
-  // Filter data based on current filters
-  const filteredData = data.filter(item =>
-    (filters.function === '' || item.Function === filters.function) &&
-    (filters.level === '' || item.Level === filters.level) &&
-    (filters.country === '' || item.Country === filters.country) &&
-    (filters.source === '' || item.Source === filters.source)
-  ).sort((a, b) => a.Order - b.Order)
+  // Check if all filters are applied
+  const allFiltersApplied = filters.function && filters.level && filters.country && filters.source
+
+  // Filter data based on current filters - only show data when all filters are applied
+  const filteredData = allFiltersApplied ? data.filter(item =>
+    item.Function === filters.function &&
+    item.Level === filters.level &&
+    item.Country === filters.country &&
+    item.Source === filters.source
+  ).sort((a, b) => a.Order - b.Order) : []
 
   // Calculate simulation results
   const calculateResults = (): StageResult[] => {
@@ -346,7 +349,6 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="logo-section">
-            <img src="/brand/01_nulogo_the-purple.png" alt="Nubank" className="logo" />
             <h1 className="title">Hiring Funnel Simulator</h1>
           </div>
           
@@ -505,12 +507,19 @@ function App() {
             </div>
 
             {/* Results Table */}
-            {filteredData.length === 0 && data.length > 0 ? (
+            {!allFiltersApplied ? (
+              <div className="no-data">
+                <div className="no-data-icon">🔍</div>
+                <h3>Select All Filters</h3>
+                <p>Please select all 4 filters (Function, Level, Country, Source) to view the funnel data.</p>
+                <p>The simulator will only show results when all filters are applied.</p>
+              </div>
+            ) : filteredData.length === 0 && data.length > 0 ? (
               <div className="no-data">
                 <div className="no-data-icon">📊</div>
                 <h3>No Data Available</h3>
                 <p>No funnel data found for the selected filter combination.</p>
-                <p>Try adjusting your filters or click "Clear Filters" to see all available data.</p>
+                <p>Try adjusting your filters or click "Clear Filters" to reset.</p>
               </div>
             ) : results.length > 0 ? (
               <div className="results-table">
@@ -581,6 +590,31 @@ function App() {
                 Last updated: {lastUpdated.toLocaleString()}
               </div>
             )}
+
+            {/* Considerations */}
+            <div className="considerations">
+              <h4>Considerations</h4>
+              <div className="considerations-content">
+                <div className="consideration-item">
+                  <strong>DS</strong> - No funnel available for MX (3 hires in one year) and CO (0 hires)
+                </div>
+                <div className="consideration-item">
+                  <strong>DS</strong> - No application review, only referrals and sourcing as needed
+                </div>
+                <div className="consideration-item">
+                  <strong>AE</strong> - No funnel available for MX (5 Hires) or CO (5 Hires) - Revisit in six months
+                </div>
+                <div className="consideration-item">
+                  <strong>AE</strong> - Application review at IC5 level is most accurate, most IC4 application review are from referrals or sourcing, the pipeline is open and closed quickly
+                </div>
+                <div className="consideration-item">
+                  <strong>MLE</strong> - No funnel available for MX and CO; App review rare, mostly referrals and sourcing
+                </div>
+                <div className="consideration-item">
+                  <strong>BA</strong> - No application review, sourcing and referrals only
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

@@ -512,6 +512,59 @@ body {
   margin-top: 24px;
 }
 
+/* Considerations */
+.considerations {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-top: 24px;
+  border-left: 4px solid var(--gray-300);
+}
+
+.considerations h4 {
+  color: var(--gray-700);
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.considerations h4::before {
+  content: "ℹ️";
+  font-size: 14px;
+}
+
+.considerations-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.consideration-item {
+  background: var(--gray-100);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--gray-700);
+  border-left: 3px solid var(--gray-300);
+  transition: all 0.2s ease;
+}
+
+.consideration-item:hover {
+  background: var(--gray-200);
+  border-left-color: var(--primary);
+}
+
+.consideration-item strong {
+  color: var(--primary);
+  font-weight: 600;
+  margin-right: 8px;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .header-content {
@@ -577,6 +630,20 @@ body {
   .results-table table,
   .data-table table {
     min-width: 800px;
+  }
+  
+  .considerations {
+    padding: 16px;
+    margin-top: 16px;
+  }
+  
+  .considerations h4 {
+    font-size: 14px;
+  }
+  
+  .consideration-item {
+    padding: 10px 12px;
+    font-size: 13px;
   }
 }
 
