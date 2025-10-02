@@ -96,9 +96,35 @@ function App() {
     loadData()
   }, [])
 
-  // Get unique values for filters
+  // Get unique values for filters (with cascading logic)
   const getUniqueValues = (field: keyof FunnelData) => {
-    const values = Array.from(new Set(data.map(item => item[field])))
+    // Start with all data
+    let filteredForField = data
+    
+    // Apply cascading filters based on field
+    if (field === 'Level') {
+      // For Level, filter by selected Function
+      if (filters.function) {
+        filteredForField = data.filter(item => item.Function === filters.function)
+      }
+    } else if (field === 'Country') {
+      // For Country, filter by selected Function and Level
+      filteredForField = data.filter(item => {
+        if (filters.function && item.Function !== filters.function) return false
+        if (filters.level && item.Level !== filters.level) return false
+        return true
+      })
+    } else if (field === 'Source') {
+      // For Source, filter by selected Function, Level, and Country
+      filteredForField = data.filter(item => {
+        if (filters.function && item.Function !== filters.function) return false
+        if (filters.level && item.Level !== filters.level) return false
+        if (filters.country && item.Country !== filters.country) return false
+        return true
+      })
+    }
+    
+    const values = Array.from(new Set(filteredForField.map(item => item[field])))
     return values.sort()
   }
 
@@ -288,6 +314,25 @@ function App() {
     })
   }
 
+  // Handle filter changes with cascading logic
+  const handleFilterChange = (field: keyof typeof filters, value: string) => {
+    const newFilters = { ...filters, [field]: value }
+    
+    // Clear dependent filters when parent filter changes
+    if (field === 'function') {
+      newFilters.level = ''
+      newFilters.country = ''
+      newFilters.source = ''
+    } else if (field === 'level') {
+      newFilters.country = ''
+      newFilters.source = ''
+    } else if (field === 'country') {
+      newFilters.source = ''
+    }
+    
+    setFilters(newFilters)
+  }
+
   // Handle simulation mode change
   const handleSimulationModeChange = (mode: 'top-down' | 'bottom-up') => {
     setSimulationMode(mode)
@@ -365,7 +410,7 @@ function App() {
               <div className="filters-row">
                 <select 
                   value={filters.function} 
-                  onChange={(e) => setFilters({...filters, function: e.target.value})}
+                  onChange={(e) => handleFilterChange('function', e.target.value)}
                   className="filter-select"
                 >
                   <option value="">Select Function</option>
@@ -376,10 +421,11 @@ function App() {
                 
                 <select 
                   value={filters.level} 
-                  onChange={(e) => setFilters({...filters, level: e.target.value})}
+                  onChange={(e) => handleFilterChange('level', e.target.value)}
                   className="filter-select"
+                  disabled={!filters.function}
                 >
-                  <option value="">Select Level</option>
+                  <option value="">{filters.function ? 'Select Level' : 'Select Function first'}</option>
                   {getUniqueValues('Level').map(level => (
                     <option key={level} value={level}>{level}</option>
                   ))}
@@ -387,10 +433,11 @@ function App() {
                 
                 <select 
                   value={filters.country} 
-                  onChange={(e) => setFilters({...filters, country: e.target.value})}
+                  onChange={(e) => handleFilterChange('country', e.target.value)}
                   className="filter-select"
+                  disabled={!filters.function || !filters.level}
                 >
-                  <option value="">Select Country</option>
+                  <option value="">{filters.function && filters.level ? 'Select Country' : 'Select Function & Level first'}</option>
                   {getUniqueValues('Country').map(country => (
                     <option key={country} value={country}>{country}</option>
                   ))}
@@ -398,10 +445,11 @@ function App() {
                 
                 <select 
                   value={filters.source} 
-                  onChange={(e) => setFilters({...filters, source: e.target.value})}
+                  onChange={(e) => handleFilterChange('source', e.target.value)}
                   className="filter-select"
+                  disabled={!filters.function || !filters.level || !filters.country}
                 >
-                  <option value="">Select Source</option>
+                  <option value="">{filters.function && filters.level && filters.country ? 'Select Source' : 'Select previous filters first'}</option>
                   {getUniqueValues('Source').map(source => (
                     <option key={source} value={source}>{source}</option>
                   ))}
