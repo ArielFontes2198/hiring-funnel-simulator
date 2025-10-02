@@ -353,7 +353,8 @@ body {
 
 .results-table th:nth-child(3),
 .results-table th:nth-child(4),
-.results-table th:nth-child(5) {
+.results-table th:nth-child(5),
+.results-table th:nth-child(6) {
   text-align: center;
 }
 
@@ -364,7 +365,8 @@ body {
 
 .results-table td:nth-child(3),
 .results-table td:nth-child(4),
-.results-table td:nth-child(5) {
+.results-table td:nth-child(5),
+.results-table td:nth-child(6) {
   text-align: center;
   font-weight: 500;
 }
@@ -373,6 +375,52 @@ body {
   color: var(--primary);
   font-weight: 600;
   font-size: 16px;
+}
+
+.sum-cell {
+  color: var(--success);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.sum-input {
+  padding: 8px 12px;
+  border: 2px solid var(--success);
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  width: 120px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(22, 163, 74, 0.15);
+  position: relative;
+}
+
+.sum-input:focus {
+  outline: none;
+  border-color: #15803d;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.3);
+  background: #F0FDF4;
+  transform: translateY(-1px);
+}
+
+.sum-input::placeholder {
+  color: var(--gray-400);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.total-row {
+  background: var(--gray-100) !important;
+  border-top: 2px solid var(--primary) !important;
+  font-weight: 700;
+}
+
+.total-row td {
+  padding: 16px;
+  border-bottom: none !important;
+  background: var(--gray-100) !important;
 }
 
 /* No Data States */

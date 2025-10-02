@@ -20,6 +20,7 @@ interface StageResult {
   candidates: number
   result: number
   isOverride: boolean
+  sum: number
 }
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
   const [startingCandidates, setStartingCandidates] = useState(1000)
   const [targetHires, setTargetHires] = useState(10)
   const [stageOverrides, setStageOverrides] = useState<Record<string, number>>({})
+  const [stageSums, setStageSums] = useState<Record<string, number>>({})
 
   // Load data from Google Sheets
   const loadData = async () => {
@@ -170,24 +172,28 @@ function App() {
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
+          const sumValue = stageSums[overrideKey] || 0
           results.push({
             stage: stage.stage,
             order: stage.order,
             ptr: stage.ptr,
             candidates: currentCandidates,
             result: overrideValue,
-            isOverride: true
+            isOverride: true,
+            sum: overrideValue + sumValue
           })
           currentCandidates = overrideValue // Next stage starts with this result
         } else {
           const result = Math.round(currentCandidates * stage.ptr)
+          const sumValue = stageSums[overrideKey] || 0
           results.push({
             stage: stage.stage,
             order: stage.order,
             ptr: stage.ptr,
             candidates: currentCandidates,
             result: result,
-            isOverride: false
+            isOverride: false,
+            sum: result + sumValue
           })
           currentCandidates = result // Next stage starts with this result
         }
@@ -203,13 +209,16 @@ function App() {
       for (let i = uniqueStages.length - 1; i >= 0; i--) {
         const stage = uniqueStages[i]
         const neededCandidates = Math.round(currentTarget / stage.ptr)
+        const overrideKey = `${stage.order}-${stage.stage}`
+        const sumValue = stageSums[overrideKey] || 0
         results.unshift({
           stage: stage.stage,
           order: stage.order,
           ptr: stage.ptr,
           candidates: neededCandidates,
           result: currentTarget,
-          isOverride: false
+          isOverride: false,
+          sum: currentTarget + sumValue
         })
         currentTarget = neededCandidates
       }
@@ -232,10 +241,14 @@ function App() {
       // If we have an override, recalculate from that point forward
       if (earliestOverrideIndex !== -1) {
         // Apply the override
+        const overrideKey = `${uniqueStages[earliestOverrideIndex].order}-${uniqueStages[earliestOverrideIndex].stage}`
+        const sumValue = stageSums[overrideKey] || 0
         results[earliestOverrideIndex] = {
           ...results[earliestOverrideIndex],
           candidates: earliestOverrideValue,
-          isOverride: true
+          result: earliestOverrideValue,
+          isOverride: true,
+          sum: earliestOverrideValue + sumValue
         }
         
         // Calculate forward from the override point
@@ -248,20 +261,24 @@ function App() {
           
           if (hasOverride) {
             const overrideValue = stageOverrides[overrideKey]!
+            const sumValue = stageSums[overrideKey] || 0
             results[i] = {
               ...results[i],
               candidates: currentCandidates,
               result: overrideValue,
-              isOverride: true
+              isOverride: true,
+              sum: overrideValue + sumValue
             }
             currentCandidates = overrideValue
           } else {
             const result = Math.round(currentCandidates * stage.ptr)
+            const sumValue = stageSums[overrideKey] || 0
             results[i] = {
               ...results[i],
               candidates: currentCandidates,
               result: result,
-              isOverride: false
+              isOverride: false,
+              sum: result + sumValue
             }
             currentCandidates = result
           }
@@ -302,9 +319,32 @@ function App() {
     }
   }
 
+  // Handle stage sum
+  const handleStageSum = (stageKey: string, value: string) => {
+    const numValue = value === '' ? undefined : parseFloat(value)
+    if (numValue === undefined) {
+      const newSums = { ...stageSums }
+      delete newSums[stageKey]
+      setStageSums(newSums)
+    } else {
+      setStageSums({ ...stageSums, [stageKey]: numValue })
+    }
+  }
+
   // Clear all overrides
   const clearOverrides = () => {
     setStageOverrides({})
+  }
+
+  // Clear all sums
+  const clearSums = () => {
+    setStageSums({})
+  }
+
+  // Clear all overrides and sums
+  const clearAll = () => {
+    setStageOverrides({})
+    setStageSums({})
   }
 
   // Clear all filters
@@ -339,8 +379,9 @@ function App() {
   // Handle simulation mode change
   const handleSimulationModeChange = (mode: 'top-down' | 'bottom-up') => {
     setSimulationMode(mode)
-    // Clear overrides when changing mode to avoid conflicts
+    // Clear overrides and sums when changing mode to avoid conflicts
     setStageOverrides({})
+    setStageSums({})
   }
 
   return (
@@ -504,6 +545,18 @@ function App() {
                   Clear Overrides
                 </button>
               </div>
+
+              <div className="control-group">
+                <button onClick={clearSums} className="clear-btn">
+                  Clear Sums
+                </button>
+              </div>
+
+              <div className="control-group">
+                <button onClick={clearAll} className="clear-btn">
+                  Clear All
+                </button>
+              </div>
             </div>
 
             {/* Results Table */}
@@ -531,13 +584,16 @@ function App() {
                       <th>PTR (%)</th>
                       <th>Candidates</th>
                       <th>Result</th>
+                      <th>Sum</th>
                       <th>Override</th>
+                      <th>Add to Sum</th>
                     </tr>
                   </thead>
                   <tbody>
                     {results.map((stage) => {
                       const stageKey = `${stage.order}-${stage.stage}`
                       const overrideValue = stageOverrides[stageKey]
+                      const sumValue = stageSums[stageKey]
                       
                       return (
                         <tr key={stageKey} className={stage.isOverride ? 'override-row' : ''}>
@@ -545,7 +601,8 @@ function App() {
                           <td>{stage.stage}</td>
                           <td>{(stage.ptr * 100).toFixed(0)}%</td>
                           <td>{stage.candidates}</td>
-                          <td className="result-cell">{stage.result}</td>
+                          <td className="result-cell">{stage.result.toFixed(2)}</td>
+                          <td className="sum-cell">{stage.sum.toFixed(2)}</td>
                           <td>
                             <input
                               type="number"
@@ -570,10 +627,43 @@ function App() {
                               </div>
                             )}
                           </td>
+                          <td>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="Add to sum"
+                              value={sumValue || ''}
+                              onChange={(e) => handleStageSum(stageKey, e.target.value)}
+                              className="sum-input"
+                              title={sumValue ? `Sum addition: ${sumValue}` : 'Click to add value to sum'}
+                            />
+                            {sumValue && (
+                              <div style={{ 
+                                fontSize: '10px', 
+                                color: 'var(--success)', 
+                                fontWeight: 'bold', 
+                                marginTop: '2px',
+                                backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                display: 'inline-block'
+                              }}>
+                                +{sumValue}
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       )
                     })}
                   </tbody>
+                  <tfoot>
+                    <tr className="total-row">
+                      <td colSpan={4}><strong>Total</strong></td>
+                      <td className="result-cell"><strong>{results.reduce((sum, stage) => sum + stage.result, 0).toFixed(2)}</strong></td>
+                      <td className="sum-cell"><strong>{results.reduce((sum, stage) => sum + stage.sum, 0).toFixed(2)}</strong></td>
+                      <td colSpan={2}></td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             ) : (
