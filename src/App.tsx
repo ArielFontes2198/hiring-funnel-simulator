@@ -397,9 +397,7 @@ function App() {
       {/* Header */}
       <header className="header">
         <div className="header-content">
-          <div className="logo-section">
-            <h1 className="title">Hiring Funnel Simulator</h1>
-          </div>
+          <h1 className="title">Hiring Funnel Simulator</h1>
           
           <div className="header-actions">
             <button 

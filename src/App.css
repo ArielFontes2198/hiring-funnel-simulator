@@ -54,17 +54,6 @@ body {
   height: 72px;
 }
 
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.logo {
-  height: 40px;
-  width: auto;
-  object-fit: contain;
-}
 
 .title {
   font-size: 24px;
