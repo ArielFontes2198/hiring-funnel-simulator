@@ -208,7 +208,6 @@ function App() {
       
       // Initialize all results with baseline calculation
       let currentTarget = targetHires
-      let currentSumTarget = targetHires
       for (let i = uniqueStages.length - 1; i >= 0; i--) {
         const stage = uniqueStages[i]
         const neededCandidates = currentTarget / stage.ptr
@@ -218,13 +217,12 @@ function App() {
           stage: stage.stage,
           order: stage.order,
           ptr: stage.ptr,
-          candidates: neededCandidates,
+          candidates: parseFloat(neededCandidates.toFixed(2)),
           result: currentTarget,
           isOverride: false,
-          sum: currentSumTarget + sumValue
+          sum: currentTarget + sumValue
         })
         currentTarget = neededCandidates
-        currentSumTarget = currentSumTarget + sumValue
       }
       
       // Find the earliest override and recalculate from there forward
@@ -257,7 +255,6 @@ function App() {
         
         // Calculate forward from the override point
         let currentCandidates = earliestOverrideValue
-        let currentSumCandidates = earliestOverrideValue + sumValue
         
         for (let i = earliestOverrideIndex + 1; i < uniqueStages.length; i++) {
           const stage = uniqueStages[i]
@@ -267,26 +264,26 @@ function App() {
           
           if (hasOverride) {
             const overrideValue = stageOverrides[overrideKey]!
+            const sumResult = currentCandidates * stage.ptr + sumValue
             results[i] = {
               ...results[i],
               candidates: currentCandidates,
               result: overrideValue,
               isOverride: true,
-              sum: currentSumCandidates * stage.ptr + sumValue
+              sum: sumResult
             }
             currentCandidates = overrideValue
-            currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
           } else {
             const result = currentCandidates * stage.ptr
+            const sumResult = currentCandidates * stage.ptr + sumValue
             results[i] = {
               ...results[i],
               candidates: currentCandidates,
               result: result,
               isOverride: false,
-              sum: currentSumCandidates * stage.ptr + sumValue
+              sum: sumResult
             }
             currentCandidates = result
-            currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
           }
         }
       }
