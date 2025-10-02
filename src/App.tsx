@@ -168,37 +168,64 @@ function App() {
     } else {
       // Bottom-up: Start with target hires and calculate backwards
       const results: StageResult[] = []
-      let currentTarget = targetHires
       
-      // Process stages in reverse order (from last to first)
+      // First, calculate normally without overrides to get baseline
+      let currentTarget = targetHires
       for (let i = uniqueStages.length - 1; i >= 0; i--) {
+        const stage = uniqueStages[i]
+        const neededCandidates = Math.round(currentTarget / stage.ptr)
+        results.unshift({
+          stage: stage.stage,
+          order: stage.order,
+          ptr: stage.ptr,
+          candidates: neededCandidates,
+          result: currentTarget,
+          isOverride: false
+        })
+        currentTarget = neededCandidates
+      }
+      
+      // Now apply overrides and recalculate affected stages
+      for (let i = 0; i < uniqueStages.length; i++) {
         const stage = uniqueStages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
-          results.unshift({
-            stage: stage.stage,
-            order: stage.order,
-            ptr: stage.ptr,
+          results[i] = {
+            ...results[i],
             candidates: overrideValue,
-            result: currentTarget,
             isOverride: true
-          })
-          currentTarget = overrideValue // Previous stage needs this many candidates
-        } else {
-          // Calculate how many candidates we need for this stage
-          const neededCandidates = Math.round(currentTarget / stage.ptr)
-          results.unshift({
-            stage: stage.stage,
-            order: stage.order,
-            ptr: stage.ptr,
-            candidates: neededCandidates,
-            result: currentTarget,
-            isOverride: false
-          })
-          currentTarget = neededCandidates // Previous stage needs this many candidates
+          }
+          
+          // Recalculate all subsequent stages (higher order numbers)
+          let nextTarget = overrideValue
+          for (let j = i + 1; j < uniqueStages.length; j++) {
+            const nextStage = uniqueStages[j]
+            const nextOverrideKey = `${nextStage.order}-${nextStage.stage}`
+            const nextHasOverride = stageOverrides[nextOverrideKey] !== undefined
+            
+            if (nextHasOverride) {
+              const nextOverrideValue = stageOverrides[nextOverrideKey]!
+              results[j] = {
+                ...results[j],
+                candidates: nextOverrideValue,
+                result: nextTarget,
+                isOverride: true
+              }
+              nextTarget = nextOverrideValue
+            } else {
+              const neededCandidates = Math.round(nextTarget / nextStage.ptr)
+              results[j] = {
+                ...results[j],
+                candidates: neededCandidates,
+                result: nextTarget,
+                isOverride: false
+              }
+              nextTarget = neededCandidates
+            }
+          }
         }
       }
       
@@ -434,7 +461,16 @@ function App() {
                             title={overrideValue ? `Override: ${overrideValue}` : 'Click to override this stage'}
                           />
                           {overrideValue && (
-                            <div style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 'bold', marginTop: '2px' }}>
+                            <div style={{ 
+                              fontSize: '10px', 
+                              color: 'var(--primary)', 
+                              fontWeight: 'bold', 
+                              marginTop: '2px',
+                              backgroundColor: 'rgba(138, 5, 190, 0.1)',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              display: 'inline-block'
+                            }}>
                               OVERRIDE
                             </div>
                           )}

@@ -344,8 +344,20 @@ body {
 }
 
 .override-row {
-  background: #E0F2FE !important;
+  background: #F0F9FF !important;
   border-left: 4px solid var(--primary) !important;
+  position: relative;
+}
+
+.override-row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, rgba(138, 5, 190, 0.05) 0%, transparent 100%);
+  pointer-events: none;
 }
 
 .override-input {
@@ -355,21 +367,23 @@ body {
   background: var(--white);
   color: var(--text);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   width: 120px;
   text-align: center;
-  box-shadow: 0 0 0 1px rgba(138, 5, 190, 0.1);
+  box-shadow: 0 2px 4px rgba(138, 5, 190, 0.15);
+  position: relative;
 }
 
 .override-input:focus {
   outline: none;
   border-color: var(--dark);
-  box-shadow: 0 0 0 3px rgba(138, 5, 190, 0.2);
+  box-shadow: 0 0 0 3px rgba(138, 5, 190, 0.3);
   background: #FEF7FF;
+  transform: translateY(-1px);
 }
 
 .override-input::placeholder {
-  color: var(--gray-500);
+  color: var(--gray-400);
   font-size: 12px;
   font-weight: 400;
 }
