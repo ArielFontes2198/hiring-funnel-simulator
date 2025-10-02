@@ -278,6 +278,16 @@ function App() {
     setStageOverrides({})
   }
 
+  // Clear all filters
+  const clearFilters = () => {
+    setFilters({
+      function: 'All',
+      level: 'All',
+      country: 'All',
+      source: 'All'
+    })
+  }
+
   // Handle simulation mode change
   const handleSimulationModeChange = (mode: 'top-down' | 'bottom-up') => {
     setSimulationMode(mode)
@@ -352,45 +362,51 @@ function App() {
 
             {/* Filters */}
             <div className="filters">
-              <select 
-                value={filters.function} 
-                onChange={(e) => setFilters({...filters, function: e.target.value})}
-                className="filter-select"
-              >
-                {getUniqueValues('Function').map(func => (
-                  <option key={func} value={func}>{func}</option>
-                ))}
-              </select>
-              
-              <select 
-                value={filters.level} 
-                onChange={(e) => setFilters({...filters, level: e.target.value})}
-                className="filter-select"
-              >
-                {getUniqueValues('Level').map(level => (
-                  <option key={level} value={level}>{level}</option>
-                ))}
-              </select>
-              
-              <select 
-                value={filters.country} 
-                onChange={(e) => setFilters({...filters, country: e.target.value})}
-                className="filter-select"
-              >
-                {getUniqueValues('Country').map(country => (
-                  <option key={country} value={country}>{country}</option>
-                ))}
-              </select>
-              
-              <select 
-                value={filters.source} 
-                onChange={(e) => setFilters({...filters, source: e.target.value})}
-                className="filter-select"
-              >
-                {getUniqueValues('Source').map(source => (
-                  <option key={source} value={source}>{source}</option>
-                ))}
-              </select>
+              <div className="filters-row">
+                <select 
+                  value={filters.function} 
+                  onChange={(e) => setFilters({...filters, function: e.target.value})}
+                  className="filter-select"
+                >
+                  {getUniqueValues('Function').map(func => (
+                    <option key={func} value={func}>{func}</option>
+                  ))}
+                </select>
+                
+                <select 
+                  value={filters.level} 
+                  onChange={(e) => setFilters({...filters, level: e.target.value})}
+                  className="filter-select"
+                >
+                  {getUniqueValues('Level').map(level => (
+                    <option key={level} value={level}>{level}</option>
+                  ))}
+                </select>
+                
+                <select 
+                  value={filters.country} 
+                  onChange={(e) => setFilters({...filters, country: e.target.value})}
+                  className="filter-select"
+                >
+                  {getUniqueValues('Country').map(country => (
+                    <option key={country} value={country}>{country}</option>
+                  ))}
+                </select>
+                
+                <select 
+                  value={filters.source} 
+                  onChange={(e) => setFilters({...filters, source: e.target.value})}
+                  className="filter-select"
+                >
+                  {getUniqueValues('Source').map(source => (
+                    <option key={source} value={source}>{source}</option>
+                  ))}
+                </select>
+                
+                <button onClick={clearFilters} className="clear-filters-btn">
+                  Clear Filters
+                </button>
+              </div>
             </div>
 
             {/* Simulation Controls */}
