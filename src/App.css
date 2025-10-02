@@ -423,6 +423,25 @@ body {
   background: var(--gray-100) !important;
 }
 
+.consolidated-row {
+  background: var(--success) !important;
+  color: var(--white) !important;
+  font-weight: 700;
+}
+
+.consolidated-row td {
+  padding: 16px;
+  border-bottom: none !important;
+  background: var(--success) !important;
+  color: var(--white) !important;
+}
+
+.consolidated-cell {
+  color: var(--white) !important;
+  font-weight: 700;
+  font-size: 16px;
+}
+
 /* No Data States */
 .no-data, .no-results {
   background: var(--white);

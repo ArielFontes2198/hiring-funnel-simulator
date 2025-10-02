@@ -164,15 +164,16 @@ function App() {
       // Top-down: Start with initial candidates and calculate forward
       const results: StageResult[] = []
       let currentCandidates = startingCandidates
+      let currentSumCandidates = startingCandidates
       
       for (let i = 0; i < uniqueStages.length; i++) {
         const stage = uniqueStages[i]
         const overrideKey = `${stage.order}-${stage.stage}`
         const hasOverride = stageOverrides[overrideKey] !== undefined
+        const sumValue = stageSums[overrideKey] || 0
         
         if (hasOverride) {
           const overrideValue = stageOverrides[overrideKey]!
-          const sumValue = stageSums[overrideKey] || 0
           results.push({
             stage: stage.stage,
             order: stage.order,
@@ -180,12 +181,12 @@ function App() {
             candidates: currentCandidates,
             result: overrideValue,
             isOverride: true,
-            sum: overrideValue + sumValue
+            sum: currentSumCandidates * stage.ptr + sumValue
           })
           currentCandidates = overrideValue // Next stage starts with this result
+          currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
         } else {
-          const result = Math.round(currentCandidates * stage.ptr)
-          const sumValue = stageSums[overrideKey] || 0
+          const result = currentCandidates * stage.ptr
           results.push({
             stage: stage.stage,
             order: stage.order,
@@ -193,9 +194,10 @@ function App() {
             candidates: currentCandidates,
             result: result,
             isOverride: false,
-            sum: result + sumValue
+            sum: currentSumCandidates * stage.ptr + sumValue
           })
           currentCandidates = result // Next stage starts with this result
+          currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
         }
       }
       
@@ -206,9 +208,10 @@ function App() {
       
       // Initialize all results with baseline calculation
       let currentTarget = targetHires
+      let currentSumTarget = targetHires
       for (let i = uniqueStages.length - 1; i >= 0; i--) {
         const stage = uniqueStages[i]
-        const neededCandidates = Math.round(currentTarget / stage.ptr)
+        const neededCandidates = currentTarget / stage.ptr
         const overrideKey = `${stage.order}-${stage.stage}`
         const sumValue = stageSums[overrideKey] || 0
         results.unshift({
@@ -218,9 +221,10 @@ function App() {
           candidates: neededCandidates,
           result: currentTarget,
           isOverride: false,
-          sum: currentTarget + sumValue
+          sum: currentSumTarget + sumValue
         })
         currentTarget = neededCandidates
+        currentSumTarget = currentSumTarget + sumValue
       }
       
       // Find the earliest override and recalculate from there forward
@@ -253,34 +257,36 @@ function App() {
         
         // Calculate forward from the override point
         let currentCandidates = earliestOverrideValue
+        let currentSumCandidates = earliestOverrideValue + sumValue
         
         for (let i = earliestOverrideIndex + 1; i < uniqueStages.length; i++) {
           const stage = uniqueStages[i]
           const overrideKey = `${stage.order}-${stage.stage}`
           const hasOverride = stageOverrides[overrideKey] !== undefined
+          const sumValue = stageSums[overrideKey] || 0
           
           if (hasOverride) {
             const overrideValue = stageOverrides[overrideKey]!
-            const sumValue = stageSums[overrideKey] || 0
             results[i] = {
               ...results[i],
               candidates: currentCandidates,
               result: overrideValue,
               isOverride: true,
-              sum: overrideValue + sumValue
+              sum: currentSumCandidates * stage.ptr + sumValue
             }
             currentCandidates = overrideValue
+            currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
           } else {
-            const result = Math.round(currentCandidates * stage.ptr)
-            const sumValue = stageSums[overrideKey] || 0
+            const result = currentCandidates * stage.ptr
             results[i] = {
               ...results[i],
               candidates: currentCandidates,
               result: result,
               isOverride: false,
-              sum: result + sumValue
+              sum: currentSumCandidates * stage.ptr + sumValue
             }
             currentCandidates = result
+            currentSumCandidates = currentSumCandidates * stage.ptr + sumValue
           }
         }
       }
@@ -658,10 +664,16 @@ function App() {
                   </tbody>
                   <tfoot>
                     <tr className="total-row">
-                      <td colSpan={4}><strong>Total</strong></td>
-                      <td className="result-cell"><strong>{results.reduce((sum, stage) => sum + stage.result, 0).toFixed(2)}</strong></td>
-                      <td className="sum-cell"><strong>{results.reduce((sum, stage) => sum + stage.sum, 0).toFixed(2)}</strong></td>
+                      <td colSpan={4}><strong>Final Result</strong></td>
+                      <td className="result-cell"><strong>{results.length > 0 ? results[results.length - 1].result.toFixed(2) : '0.00'}</strong></td>
+                      <td className="sum-cell"><strong>{results.length > 0 ? results[results.length - 1].sum.toFixed(2) : '0.00'}</strong></td>
                       <td colSpan={2}></td>
+                    </tr>
+                    <tr className="consolidated-row">
+                      <td colSpan={4}><strong>Total Add to Sum</strong></td>
+                      <td colSpan={2}></td>
+                      <td className="consolidated-cell"><strong>{Object.values(stageSums).reduce((sum, value) => sum + value, 0).toFixed(2)}</strong></td>
+                      <td></td>
                     </tr>
                   </tfoot>
                 </table>
